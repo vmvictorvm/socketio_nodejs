@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font: 13px Helvetica, Arial; }
+        form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
+        #inputName {
+          border: 2px;
+          border-style: solid;
+          padding:8px;
+        }
+        #inputMsg {
+          border: 3px;
+          border-style: solid;
+          padding:10px;
+          width: 70%;
+        }
+        form button { width: 9%; border: none; padding: 10px; }
+        li {
+          padding: 5px 5px;
+        }
+        li:nth-child(odd) {
+          background: lightblue;
+        }
+    </style>
+  </head>
+
+  <body>
+      <ul id="messages"></ul>
+
+    <form name="chatForm" action="">
+      <input id="inputName" autocomplete="off" placeholder="Enter your name here"/>
+      <input id="inputMsg" autocomplete="off" placeholder="Enter text message here"/><button>Send</button>
+    </form>
+
+    </div>
+
+
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+      var socket = io(); //Load socket.io-client
+
+      var inputName = document.querySelector('#inputName');
+      var inputMsg = document.querySelector('#inputMsg');
+
+
+      socket.on('connect', function() {
+        var chatForm = document.forms.chatForm;  //chatForm is the name attribute of the form.
+
+        if (chatForm) {
+
+          chatForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            //Broadcast/Emit to all devices that are connected to this server, that the postMessage event is happening
+            //and pass along the variables name and message to any connected users.
+            socket.emit('postMessage', {
+              name: inputName.value,
+              message: inputMsg.value
+            });
+
+            inputMsg.value='';
+
+            inputMsg.focus();
+          });
+
+          socket.on('updateMessages', function(data) {
+            showMessage(data);
+          });
+        }
+      });
+
+
+      function showMessage(data) {
+        var messages = document.querySelector('#messages');
+        var newMessage = document.createElement('li');
+
+        newMessage.innerHTML ='<strong>' + data.name + '</strong>: ' + data.message;
+        messages.insertBefore(newMessage, messages.firstChild);  //Prepend to the top of the messages list.
+      }
+
+    </script>
+  </body>
+</html>
